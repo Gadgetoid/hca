@@ -186,7 +186,7 @@
     <ul id="sort">
         <li sortby="price">Price</li>
         <li sortby="title">Title</li>
-        <li sortby="updated">Updated</li>
+        <li sortby="updated" class="selected">Updated</li>
         <li sortby="bidder">Bidder</li>
     </ul>
     <div id="items"></div>
@@ -204,7 +204,6 @@
     const active_bidders_url = "https://mkuk-hectoring-auction-f8342f11a136.herokuapp.com/active-bidders";
     const auction_items = document.getElementById("items");
     const sort_options = document.getElementById("sort");
-    let update_timeout = null;
 
     auction_items.addEventListener("click", (evt) => {
         if (evt.target.tagName === "FIGURE") {
@@ -294,14 +293,13 @@
     }
 
     async function update(force = false) {
-        clearTimeout(update_timeout);
         console.log(`Updating at: ${new Date()}`);
         const response = await fetch(items_url);
         const data = await response.json();
 
         await update_counts(data);
 
-        await data.forEach(async (item_data, item_index) => {
+        await Promise.all(data.map(async (item_data, item_index) => {
             let item_sha = await sha256digest(item_data.desc);
             let item_dom = document.getElementById(item_sha);
             if (!item_dom) {
@@ -333,7 +331,9 @@
             item_dom.setAttribute("image", item_data.image);
             item_dom.setAttribute("index", item_index);
             item_dom.classList.toggle("recent", recent);
-        });
+
+            return item_dom;
+        }));
 
         // Update the sort order
         const current_sort = sort_options.querySelector("li.selected");
@@ -343,11 +343,10 @@
             sort(sortby, direction === "desc");
             console.log(`Sorting by ${sortby}, ${direction}`)
         }
-
-        update_timeout = setTimeout(update, update_frequency * 1000);
     }
 
-    let result = update();
+    update();
+    const update_interval = setInterval(update, update_frequency * 1000);
 </script>
 </body>
 </html>
