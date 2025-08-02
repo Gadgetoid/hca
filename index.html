@@ -47,16 +47,12 @@
         text-align: center;
 
     }
-    #sort li:first-child {
-        background: transparent;
-        color: #4d7173;
-    }
     #sort {
         grid-auto-flow: column;
         justify-content: right;
         grid-template-columns: auto;
         font-size:0.8em;
-        margin-top:4em;
+        margin-top:2em;
     }
     #sort li {
         border-top-left-radius:1em;
@@ -86,10 +82,6 @@
     #sort li:nth-child(odd).selected {color: #8fd6da;}
     #sort li:nth-child(odd).selected:after {border-bottom-color: #8fd6da;}
     #sort li:nth-child(odd).selected.asc:after {border-top-color: #8fd6da;}
-    #sort li:nth-child(1) {
-        cursor: inherit;
-        padding-right:0;
-    }
     ul li a, ul li a:visited, ul li a:active {
         color: #8fd6da;
         background: #284443;
@@ -190,7 +182,6 @@
         <li id="bid"><a href="https://docs.google.com/forms/d/e/1FAIpQLScpclLYzGk4yr6m1HVma7Xs7M34tWFAMJBx1mGEUm9_aFNQIw/viewform">👨‍⚖🔨💰🏷️  Bid!</a></li>
     </ul>
     <ul id="sort">
-        <li>Sort</li>
         <li sortby="price">Price</li>
         <li sortby="title">Title</li>
         <li sortby="updated">Updated</li>
