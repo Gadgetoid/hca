@@ -154,6 +154,7 @@
         background-position: center center;
         margin: 0;
         padding: 0;
+        cursor: pointer;
     }
     @media (min-width: 640px) {
         #items {
@@ -333,6 +334,14 @@
         }
         localStorage.setItem('items', document.getElementById("items").innerHTML);
         localStorage.setItem('shasum', shasum);
+    
+        Array.from(document.getElementsByTagName("figure")).forEach((figure) => {
+            figure.onclick = (evt) => {
+                let url = evt.target.style.backgroundImage.slice(5, -8) + ".jpeg";
+                window.open(url);
+            }
+        });
+
         setTimeout(update, update_frequency * 1000);
     }
 
