@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta http-equiv="content-type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+<style type="text/css">
+    body {
+        margin: 0;
+        padding: 1em;
+        font-family:ui-monospace,
+                    Menlo, Monaco,
+                    "Cascadia Mono", "Segoe UI Mono",
+                    "Roboto Mono",
+                    "Oxygen Mono",
+                    "Ubuntu Monospace",
+                    "Source Code Pro",
+                    "Fira Mono",
+                    "Droid Sans Mono",
+                    "Courier New", monospace;
+        font-size: 12px;
+        background: #021617;
+    }
+    ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        grid-column-gap: 1em;
+        grid-row-gap: 1em;
+        margin-bottom: 1em;
+    }
+    ul li {font-size: 1.5em;}
+    ul li, ul a {
+        background: #d18fda;
+        color: #233536;
+        padding: 0.5em 1em;
+    }
+    ul li:nth-child(odd) {
+        background: #8fd6da;
+    }
+    #stats li:last-child {
+        display: contents;
+    }
+    #stats a {
+        grid-column-start: 1;
+        grid-column-end: 3;
+        text-align: center;
+
+    }
+    #sort li:first-child {
+        background: transparent;
+        color: #4d7173;
+    }
+    #sort {
+        grid-auto-flow: column;
+        justify-content: right;
+        grid-template-columns: auto;
+        font-size:0.8em;
+        margin-top:4em;
+    }
+    #sort li {
+        border-top-left-radius:1em;
+        border-bottom-right-radius: 1em;
+        cursor: pointer;
+    }
+    #sort li.selected {
+        color: #d18fda;
+        background: #233536;
+    }
+    #sort li.selected:after {
+        content: "";
+        border-width: .6em .3em .6em .3em;
+        border-style: solid;
+        border-top-width: 0;
+        border-color: transparent;
+        border-bottom-color: #d18fda;
+        display: inline-block;
+        margin-left:.6em;
+    }
+    #sort li.selected.asc:after {
+        content: "";
+        border-width: .6em .3em .6em .3em;
+        border-bottom-width: 0;
+        border-top-color: #d18fda;
+    }
+    #sort li:nth-child(odd).selected {
+        color: #8fd6da;
+    }
+    #sort li:nth-child(odd).selected:after {
+        border-bottom-color: #8fd6da;
+
+    }
+    #sort li:nth-child(odd).selected.asc:after {
+        border-top-color: #8fd6da;
+    }
+    #sort li:nth-child(1) {
+        cursor: inherit;
+    }
+    ul li a, ul li a:visited, ul li a:active {
+        color: #8fd6da;
+        background: #284443;
+        text-decoration: none;
+    }
+    ul li a:hover {
+        color: #d18fda;
+    }
+    #items {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-column-gap: 1em;
+        grid-row-gap: 1em;
+    }
+    #items div {
+        border:2px solid transparent;
+        background: #233536;
+        color: #8fd6da;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0px 0px 0px #233536;
+        transition: all 1s;
+    }
+    #items div.updated {
+        background: #233536;
+        box-shadow: 0px 0px 10px #f6b1ff;
+        transition: all 1s;
+        border:2px solid #f6b1ff
+    }
+    #items div, #items figure {
+        border-top-left-radius: 20px;
+    }
+    #items h2 {
+        margin: 0;
+        padding: 1em;
+        font-size: 1.5em;
+    }
+    #items p {
+        text-align: right;
+        margin: 0;
+        padding: 0 1em 1em 1em;
+        font-size: 1.5em;
+        color: #d18fda;
+    }
+    #items p:nth-child(3) {
+        padding-bottom: 0;
+        margin: auto 0 0 0;
+    }
+    #items div figure {
+        width: 100%;
+        height: 200px;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center center;
+        margin: 0;
+        padding: 0;
+    }
+    @media (min-width: 640px) {
+        #items {
+            grid-template-columns: 1fr 1fr;
+        }
+        #stats li, #stats a {
+            border-top-left-radius:1em;
+            border-bottom-right-radius: 1em;
+        }
+        ul {
+            grid-auto-flow: column;
+            justify-content: center;
+            grid-template-columns: auto;
+        }
+        #stats a {
+            margin-top:0;
+            grid-column-start: auto;
+            grid-column-end: auto;
+        }
+    }
+    @media (min-width: 1280px) {
+        #items {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+        }
+    }
+
+</style>
+</head>
+<body>
+    <ul id="stats">
+        <li id="count"></li>
+        <li id="bidders"></li>
+        <li id="bids"></li>
+        <li id="total"></li>
+        <li id="bid"><a href="https://docs.google.com/forms/d/e/1FAIpQLScpclLYzGk4yr6m1HVma7Xs7M34tWFAMJBx1mGEUm9_aFNQIw/viewform">👨‍⚖🔨💰🏷️  Bid!</a></li>
+    </ul>
+    <ul id="sort">
+        <li>Sort by:</li>
+        <li sortby="price">Price</li>
+        <li sortby="title">Title</li>
+        <li sortby="updated">Updated</li>
+        <li sortby="bidder">Bidder</li>
+    </ul>
+    <div id="items"></div>
+<script type="text/javascript">
+    'use strict';
+
+    let old_shasum = localStorage.getItem('shasum') || '';
+    if(!localStorage.getItem('items')) {
+        old_shasum = '';
+    }
+    let update_frequency = 30; // Seconds
+    const items_url = "https://mkuk-hectoring-auction-f8342f11a136.herokuapp.com/items";
+    const bid_count_url = "https://mkuk-hectoring-auction-f8342f11a136.herokuapp.com/bid-count";
+    const active_bidders_url = "https://mkuk-hectoring-auction-f8342f11a136.herokuapp.com/active-bidders";
+
+    async function sha256digest(message) {
+        const msgUint8 = new TextEncoder().encode(message); // encode as (utf-8) Uint8Array
+        const hashBuffer = await window.crypto.subtle.digest("SHA-256", msgUint8); // hash the message
+        const hashArray = Array.from(new Uint8Array(hashBuffer)); // convert buffer to byte array
+        const hashHex = hashArray
+            .map((b) => b.toString(16).padStart(2, "0"))
+            .join(""); // convert bytes to hex string
+        return hashHex;
+    }
+
+    async function update_counts(data) {
+        let bid_total = data.reduce((total, item) => total += parseFloat(item.bid), 0.0);
+        console.log(bid_total);
+        document.getElementById("total").innerText = `£${bid_total} raised`;
+        document.getElementById("count").innerText = `${data.length} items`;
+
+        fetch(active_bidders_url).then(async (response) => {
+            const active_bidders = await response.json();
+            document.getElementById("bidders").innerText = `${active_bidders.count} bidders`;
+        });
+
+        fetch(bid_count_url).then(async (response) => {
+            const bid_count = await response.json();
+            document.getElementById("bids").innerText = `${bid_count.count} bids`;
+        });
+    }
+
+    function sort(field, desc = false) {
+        let container = document.getElementById("items");
+        let items = Array.from(container.children);
+        switch(field) {
+            case "price":
+                items.sort((a, b) => {
+                    let va = parseFloat(a.getAttribute(field));
+                    let vb = parseFloat(b.getAttribute(field));
+                    return desc ? vb - va : va - vb;
+                })
+                break;
+            case "title":
+                items.sort((a, b) => {
+                    let va = a.getElementsByTagName("h2")[0].textContent;
+                    let vb = b.getElementsByTagName("h2")[0].textContent;
+                    let diff = va.localeCompare(vb);
+                    return desc ? -diff : diff;
+                })
+                break;
+            case "updated":
+                items.sort((a, b) => {
+                    let va = Date.parse(a.getElementsByTagName("p")[1].textContent.substring(3)) || 0;
+                    let vb = Date.parse(b.getElementsByTagName("p")[1].textContent.substring(3)) || 0;
+                    return desc ? va - vb : vb - va;
+                })
+                break;
+            case "bidder":
+                items.sort((a, b) => {
+                    let va = a.getElementsByTagName("p")[0].textContent.split(" by ")[1];
+                    let vb = b.getElementsByTagName("p")[0].textContent.split(" by ")[1];
+                    let diff = va.localeCompare(vb);
+                    return desc ? -diff : diff;
+                })
+                break;
+        }
+        items.forEach((item) => {
+            item.remove();
+            container.appendChild(item);
+        });
+    }
+
+    async function update(force = false) {
+        console.log("Update...");
+        const response = await fetch(items_url);
+        const data = await response.json();
+        //console.log(data);
+        const shasum = await sha256digest(JSON.stringify(data));
+
+        await update_counts(data);
+
+        if(shasum != old_shasum) {
+            old_shasum = shasum;
+            console.log(`Contents changed... ${old_shasum}`);
+            data.forEach(async (item) => {
+                let item_sha = await sha256digest(item.desc);
+                let new_bid = `£${item.bid.replace(".00", "")} by ${item.highest_bidder}`;
+                //console.log(item.desc)
+                let item_dom = document.getElementById(item_sha);
+                if (!item_dom) {
+                    item_dom = document.createElement("div");
+                    item_dom.id = item_sha;
+                    let item_title = document.createElement("h2");
+                    let item_img = document.createElement("figure");
+                    ["sealed", "open"].forEach((classifier => {
+                        if (item.desc.toLowerCase().includes(classifier)) {
+                            item_dom.setAttribute("type", classifier);
+                        }
+                    }));
+                    let item_bid = document.createElement("p");
+                    let item_ts = document.createElement("p");
+                    item_bid.textContent = new_bid;
+                    item_ts.textContent = 'at: Unknown';
+                    item_title.textContent = item.desc;
+                    item_img.style.backgroundImage = `url(${item.image.replace(".jpeg", "m.jpeg")})`;
+                    item_dom.appendChild(item_img);
+                    item_dom.appendChild(item_title);
+                    item_dom.appendChild(item_bid);
+                    item_dom.appendChild(item_ts);
+                    document.getElementById("items").appendChild(item_dom);
+                }
+                let bid_p = item_dom.getElementsByTagName("p")[0];
+                let ts_p = item_dom.getElementsByTagName("p")[1];
+                let changed = bid_p.textContent != new_bid;
+                item_dom.classList.toggle("updated", changed);
+                bid_p.textContent = new_bid;
+                if (changed) {
+                    let d = new Date();
+                    let timestamp = d.toLocaleString('en-GB');
+                    ts_p.textContent = `at: ${timestamp}`;
+                    item_dom.setAttribute("timestamp", d.getTime());
+                }
+                item_dom.setAttribute("price", item.bid);
+            });
+        }
+        localStorage.setItem('items', document.getElementById("items").innerHTML);
+        localStorage.setItem('shasum', shasum);
+        setTimeout(update, update_frequency * 1000);
+    }
+
+    document.getElementById("items").innerHTML = localStorage.getItem('items') || '';
+    let result = update();
+
+    const sort_buttons = Array.from(document.getElementById("sort").children);
+    sort_buttons.forEach((item) => {
+        item.onclick = (evt) => {
+            let selected = evt.target.classList.contains("selected");
+            let sortby = evt.target.getAttribute("sortby");
+            if(!sortby) return;
+
+            sort_buttons.forEach((b) => {b.classList.remove("selected")});
+
+            if(selected) {
+                evt.target.setAttribute("direction", (evt.target.getAttribute("direction") === "desc") ? "asc" : "desc");
+            } else {
+                evt.target.setAttribute("direction", "asc");
+            }
+
+            let direction = evt.target.getAttribute("direction") === "desc";
+
+            evt.target.classList.add("selected");
+            evt.target.classList.toggle("asc", direction);
+            sort(sortby, direction);
+        };
+    });
+</script>
+</body>
+</html>
