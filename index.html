@@ -107,6 +107,7 @@
         flex-direction: column;
         box-shadow: 0px 0px 0px #233536;
         transition: all 1s;
+        border-bottom-right-radius: 20px;
     }
     #items div.recent {
         background: #233536;
@@ -120,13 +121,13 @@
     #items h2 {
         margin: 0;
         padding: 1em;
-        font-size: 1.5em;
+        font-size: 1.4em;
     }
     #items p {
         text-align: right;
         margin: 0;
         padding: 0 1em 1em 1em;
-        font-size: 1.5em;
+        font-size: 1.2em;
         color: #d18fda;
     }
     #items p:nth-child(3) {
@@ -144,6 +145,7 @@
         cursor: pointer;
     }
     footer {
+        margin-top: 2em;
         text-align: center;
         color: #8fd6da;
     }
@@ -197,156 +199,168 @@
 <script type="text/javascript">
     'use strict';
 
-    const update_frequency = 60; // Seconds
-    const recent_cutoff = 24; // Hours
-    const items_url = "https://mkuk-hectoring-auction-f8342f11a136.herokuapp.com/items";
-    const bid_count_url = "https://mkuk-hectoring-auction-f8342f11a136.herokuapp.com/bid-count";
-    const active_bidders_url = "https://mkuk-hectoring-auction-f8342f11a136.herokuapp.com/active-bidders";
-    const auction_items = document.getElementById("items");
-    const sort_options = document.getElementById("sort");
+    const update_frequency = 60 // Seconds
+    const recent_cutoff = 24 // Hours
+    const items_url = "https://mkuk-hectoring-auction-f8342f11a136.herokuapp.com/items"
+    const bid_count_url = "https://mkuk-hectoring-auction-f8342f11a136.herokuapp.com/bid-count"
+    const active_bidders_url = "https://mkuk-hectoring-auction-f8342f11a136.herokuapp.com/active-bidders"
+    const auction_items = document.getElementById("items")
+    const sort_options = document.getElementById("sort")
 
     auction_items.addEventListener("click", (evt) => {
         if (evt.target.tagName === "FIGURE") {
-            let url = evt.target.parentElement.getAttribute("image");
-            window.open(url);
+            let url = evt.target.parentElement.getAttribute("image")
+            window.open(url)
         }
-    });
+    })
 
     sort_options.addEventListener("click", (evt) => {
-        let sortby = evt.target.getAttribute("sortby");
+        let sortby = evt.target.getAttribute("sortby")
         if(!sortby) return;
 
         let selected = evt.target.classList.contains("selected");
 
         // Remove selected class from the selected sort option
-        (sort_options.querySelector("li.selected") || evt.target).classList.remove("selected");
+        (sort_options.querySelector("li.selected") || evt.target).classList.remove("selected")
 
         // Toggle the sort direction if already selected, otherwise default to ascending
-        evt.target.setAttribute("direction", (!selected || evt.target.getAttribute("direction") === "desc") ? "asc" : "desc");
+        evt.target.setAttribute("direction", (!selected || evt.target.getAttribute("direction") === "desc") ? "asc" : "desc")
 
         let direction = evt.target.getAttribute("direction") === "desc";
-        evt.target.classList.add("selected");
-        evt.target.classList.toggle("asc", direction);
-        sort(sortby, direction);
-    });
+        evt.target.classList.add("selected")
+        evt.target.classList.toggle("asc", direction)
+        sort(sortby, direction)
+    })
 
     async function sha256digest(message) {
-        const msgUint8 = new TextEncoder().encode(message); // encode as (utf-8) Uint8Array
-        const hashBuffer = await window.crypto.subtle.digest("SHA-256", msgUint8); // hash the message
-        return Array.from(new Uint8Array(hashBuffer)).map((b) => b.toString(16).padStart(2, "0")).join(""); // convert bytes to hex string
+        const msgUint8 = new TextEncoder().encode(message) // encode as (utf-8) Uint8Array
+        const hashBuffer = await window.crypto.subtle.digest("SHA-256", msgUint8) // hash the message
+        return Array.from(new Uint8Array(hashBuffer)).map((b) => b.toString(16).padStart(2, "0")).join("") // convert bytes to hex string
     }
 
     async function update_counts(data) {
-        let bid_total = data.reduce((total, item) => total += parseFloat(item.bid), 0.0);
+        let bid_total = data.reduce((total, item) => total += parseFloat(item.bid), 0.0)
         document.getElementById("total").innerHTML = `<strong>£${bid_total}</strong> raised`;
         document.getElementById("count").innerHTML = `<strong>${data.length}</strong> items`;
 
         fetch(active_bidders_url).then(async (response) => {
-            const active_bidders = await response.json();
+            const active_bidders = await response.json()
             document.getElementById("bidders").innerHTML = `<strong>${active_bidders.count}</strong> bidders`;
-        });
+        })
 
         fetch(bid_count_url).then(async (response) => {
-            const bid_count = await response.json();
+            const bid_count = await response.json()
             document.getElementById("bids").innerHTML = `<strong>${bid_count.count}</strong> bids`;
-        });
+        })
     }
 
     function sort(field, desc = false) {
-        let items = Array.from(auction_items.children);
+        let items = Array.from(auction_items.children)
         switch(field) {
             case "price":
                 items.sort((a, b) => {
-                    let va = parseFloat(a.getAttribute(field));
-                    let vb = parseFloat(b.getAttribute(field));
-                    return desc ? vb - va : va - vb;
+                    let va = parseFloat(a.getAttribute(field))
+                    let vb = parseFloat(b.getAttribute(field))
+                    return desc ? vb - va : va - vb
                 })
-                break;
+                break
             case "title":
                 items.sort((a, b) => {
-                    let va = a.getElementsByTagName("h2")[0].textContent;
-                    let vb = b.getElementsByTagName("h2")[0].textContent;
-                    let diff = va.localeCompare(vb);
-                    return desc ? -diff : diff;
+                    let va = a.getElementsByTagName("h2")[0].textContent
+                    let vb = b.getElementsByTagName("h2")[0].textContent
+                    let diff = va.localeCompare(vb)
+                    return desc ? -diff : diff
                 })
-                break;
+                break
             case "updated":
                 items.sort((a, b) => {
-                    let va = parseInt(a.getAttribute("timestamp")) || 0;
-                    let vb = parseInt(b.getAttribute("timestamp")) || 0;
-                    return desc ? va - vb : vb - va;
+                    let va = parseInt(a.getAttribute("timestamp")) || 0
+                    let vb = parseInt(b.getAttribute("timestamp")) || 0
+                    return desc ? va - vb : vb - va
                 })
-                break;
+                break
             case "bidder":
                 items.sort((a, b) => {
-                    let va = a.getAttribute("bidder");
-                    let vb = b.getAttribute("bidder");
-                    let diff = va.localeCompare(vb);
-                    return desc ? -diff : diff;
+                    let va = a.getAttribute("bidder")
+                    let vb = b.getAttribute("bidder")
+                    let diff = va.localeCompare(vb)
+                    return desc ? -diff : diff
                 })
-                break;
+                break
         }
         items.forEach((item) => {
-            item.remove();
-            auction_items.appendChild(item);
-        });
+            item.remove()
+            auction_items.appendChild(item)
+        })
     }
 
-    async function update(force = false) {
-        console.log(`Updating at: ${new Date()}`);
-        const response = await fetch(items_url);
-        const data = await response.json();
+    // Lazy load the background images in figures
+    const lazyload_observer = new IntersectionObserver((entries) => {
+        entries.map((entry) => {
+            if (entry.isIntersecting) {
+                const figure = entry.target.querySelector("figure")
+                const thumbnail = entry.target.getAttribute("image").replace(".jpeg", "l.jpeg")
+                figure.style.backgroundImage = `url(${thumbnail})`
+                lazyload_observer.unobserve(entry.target)
+            }
+        })
+    });
 
-        await update_counts(data);
+    async function update(force = false) {
+        console.log(`Updating at: ${new Date()}`)
+        const response = await fetch(items_url)
+        const data = await response.json()
+
+        await update_counts(data)
 
         await Promise.all(data.map(async (item_data, item_index) => {
-            let item_sha = await sha256digest(item_data.desc);
-            let item_dom = document.getElementById(item_sha);
+            const item_sha = await sha256digest(item_data.desc)
+            let item_dom = document.getElementById(item_sha)
             if (!item_dom) {
-                item_dom = document.createElement("div");
-                item_dom.id = item_sha;
-                let thumbnail = `url(${item_data.image.replace(".jpeg", "l.jpeg")})`;
+                item_dom = document.createElement("div")
+                item_dom.id = item_sha
                 item_dom.innerHTML = `
-                    <figure style="background-image: ${thumbnail}"></figure>
+                    <figure></figure>
                     <h2>${item_data.desc}</h2>
                     <p></p>
                     <p></p>
                 `;
-                ["sealed", "open"].forEach((classifier => {
-                    if (item_data.desc.toLowerCase().includes("(" + classifier)) {
-                        item_dom.setAttribute("type", classifier);
+                ["Sealed", "Open"].forEach((classifier => {
+                    if (item_data.desc.includes(classifier)) {
+                        item_dom.setAttribute("type", classifier)
                     }
-                }));
-                auction_items.appendChild(item_dom);
+                }))
+                lazyload_observer.observe(item_dom)
+                auction_items.appendChild(item_dom)
             }
 
-            let timestamp = new Date(item_data.submitted_at);
-            let recent = (new Date().getTime() - timestamp.getTime()) < 1000 * 60 * 60 * recent_cutoff;
+            const timestamp = new Date(item_data.submitted_at)
+            const recent = (new Date().getTime() - timestamp.getTime()) < 1000 * 60 * 60 * recent_cutoff
 
-            item_dom.querySelector("p:nth-child(3)").textContent = `£${item_data.bid.replace(".00", "")} by ${item_data.highest_bidder}`;;
-            item_dom.querySelector("p:nth-child(4)").textContent = timestamp.toLocaleString('en-GB', {dateStyle: 'medium', timeStyle: 'short'});
-            item_dom.setAttribute("timestamp", Date.parse(item_data.submitted_at));
-            item_dom.setAttribute("price", item_data.bid);
-            item_dom.setAttribute("bidder", item_data.highest_bidder);
-            item_dom.setAttribute("image", item_data.image);
-            item_dom.setAttribute("index", item_index);
-            item_dom.classList.toggle("recent", recent);
+            item_dom.querySelector("p:nth-child(3)").innerHTML = `<strong>£${item_data.bid.replace(".00", "")}</strong> by ${item_data.highest_bidder}`
+            item_dom.querySelector("p:nth-child(4)").textContent = timestamp.toLocaleString('en-GB', {dateStyle: 'medium', timeStyle: 'short'})
+            item_dom.setAttribute("timestamp", Date.parse(item_data.submitted_at))
+            item_dom.setAttribute("price", item_data.bid)
+            item_dom.setAttribute("bidder", item_data.highest_bidder)
+            item_dom.setAttribute("image", item_data.image)
+            item_dom.setAttribute("index", item_index)
+            item_dom.classList.toggle("recent", recent)
 
-            return item_dom;
-        }));
+            return item_dom
+        }))
 
         // Update the sort order
-        const current_sort = sort_options.querySelector("li.selected");
+        const current_sort = sort_options.querySelector("li.selected")
         if(current_sort) {
-            let sortby = current_sort.getAttribute("sortby");
-            let direction = current_sort.getAttribute("direction");
-            sort(sortby, direction === "desc");
+            const sortby = current_sort.getAttribute("sortby")
+            const direction = current_sort.getAttribute("direction")
+            sort(sortby, direction === "desc")
             console.log(`Sorting by ${sortby}, ${direction}`)
         }
     }
 
-    update();
-    const update_interval = setInterval(update, update_frequency * 1000);
+    update()
+    const update_interval = setInterval(update, update_frequency * 1000)
 </script>
 </body>
 </html>
