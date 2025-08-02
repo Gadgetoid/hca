@@ -58,6 +58,8 @@
         border-top-left-radius:1em;
         border-bottom-right-radius: 1em;
         cursor: pointer;
+        user-select: none;
+        -webkit-user-select: none;
     }
     #sort li.selected {
         color: #d18fda;
@@ -202,6 +204,7 @@
     const active_bidders_url = "https://mkuk-hectoring-auction-f8342f11a136.herokuapp.com/active-bidders";
     const auction_items = document.getElementById("items");
     const sort_options = document.getElementById("sort");
+    let update_timeout = null;
 
     auction_items.addEventListener("click", (evt) => {
         if (evt.target.tagName === "FIGURE") {
@@ -216,16 +219,13 @@
 
         let selected = evt.target.classList.contains("selected");
 
-        Array.from(sort_options.children).forEach((b) => {b.classList.remove("selected")});
+        // Remove selected class from the selected sort option
+        (sort_options.querySelector("li.selected") || evt.target).classList.remove("selected");
 
-        if(selected) {
-            evt.target.setAttribute("direction", (evt.target.getAttribute("direction") === "desc") ? "asc" : "desc");
-        } else {
-            evt.target.setAttribute("direction", "asc");
-        }
+        // Toggle the sort direction if already selected, otherwise default to ascending
+        evt.target.setAttribute("direction", (!selected || evt.target.getAttribute("direction") === "desc") ? "asc" : "desc");
 
         let direction = evt.target.getAttribute("direction") === "desc";
-
         evt.target.classList.add("selected");
         evt.target.classList.toggle("asc", direction);
         sort(sortby, direction);
@@ -234,11 +234,7 @@
     async function sha256digest(message) {
         const msgUint8 = new TextEncoder().encode(message); // encode as (utf-8) Uint8Array
         const hashBuffer = await window.crypto.subtle.digest("SHA-256", msgUint8); // hash the message
-        const hashArray = Array.from(new Uint8Array(hashBuffer)); // convert buffer to byte array
-        const hashHex = hashArray
-            .map((b) => b.toString(16).padStart(2, "0"))
-            .join(""); // convert bytes to hex string
-        return hashHex;
+        return Array.from(new Uint8Array(hashBuffer)).map((b) => b.toString(16).padStart(2, "0")).join(""); // convert bytes to hex string
     }
 
     async function update_counts(data) {
@@ -298,6 +294,7 @@
     }
 
     async function update(force = false) {
+        clearTimeout(update_timeout);
         console.log(`Updating at: ${new Date()}`);
         const response = await fetch(items_url);
         const data = await response.json();
@@ -338,7 +335,16 @@
             item_dom.classList.toggle("recent", recent);
         });
 
-        setTimeout(update, update_frequency * 1000);
+        // Update the sort order
+        const current_sort = sort_options.querySelector("li.selected");
+        if(current_sort) {
+            let sortby = current_sort.getAttribute("sortby");
+            let direction = current_sort.getAttribute("direction");
+            sort(sortby, direction === "desc");
+            console.log(`Sorting by ${sortby}, ${direction}`)
+        }
+
+        update_timeout = setTimeout(update, update_frequency * 1000);
     }
 
     let result = update();
