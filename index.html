@@ -202,9 +202,9 @@
     const update_frequency = 30 // Seconds
     const recent_cutoff = 24 // Hours
     const base_url = "https://mkuk-auction-develop.up.railway.app" // https://mkuk-hectoring-auction-f8342f11a136.herokuapp.com
-    const items_url = `${base_url}/items`
-    const bid_count_url = `${base_url}/bid-count`
-    const active_bidders_url = `${base_url}/active-bidders`
+    const items_url = `${base_url}/api/public/items`
+    const bid_count_url = `${base_url}/api/public/bids/bid-count`
+    const active_bidders_url = `${base_url}/api/public/bids/active-bidders`
     const auction_items = document.getElementById("items")
     const sort_options = document.getElementById("sort")
 
